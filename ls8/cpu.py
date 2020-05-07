@@ -2,12 +2,22 @@
 
 import sys
 
+# STOP THE PROGRAM FROM RUNNING
+HLT = 0b00000001
+# REGISTER register value
+LDI = 0b10000010
+# PRINT register
+PRN = 0b10000010
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = [0] * 8
+        self.reg = [0] * 8
+        self.pc = 0
+        self.running = False
 
     def load(self):
         """Load a program into memory."""
@@ -30,6 +40,11 @@ class CPU:
             self.ram[address] = instruction
             address += 1
 
+    def ram_read(self, register):
+        return self.ram[register]
+
+    def ram_write(self, register, value):
+        self.ram[register] = value
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -60,6 +75,45 @@ class CPU:
 
         print()
 
+    def hlt(self):
+        print('THE PROGRAM HAS HALTED')
+        self.running = False
+        self.pc += 1
+
+    def ldi(self):
+        register = self.ram[self.pc + 1]
+        value = self.ram[self.pc + 2]
+
+        print(f"[LDI] - Register: {register}, Value: {value}")
+
+        self.ram_write(register, value)
+
+        self.pc += 3
+
+    def prn(self):
+        register = self.ram_read(self.pc + 1)
+
+        print(self.reg[register])
+
+        self.pc += 2
+
+
     def run(self):
         """Run the CPU."""
-        pass
+    
+        self.running = True
+
+        while self.running:
+            command = self.ram[self.pc]
+
+            # HALT
+            if command == 0b00000001:
+                self.hlt()
+            # LDI what does that even mean???
+            elif command == 0b10000010:
+                self.ldi()
+            # PRN
+            elif command == 0b01000111:
+                self.prn()
+
+
