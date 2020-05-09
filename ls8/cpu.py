@@ -19,26 +19,41 @@ class CPU:
         self.pc = 0
         self.running = False
 
-    def load(self):
+    def load(self, path):
         """Load a program into memory."""
+
+        if '.ls8' not in path:
+            print('Not a valid program')
+            print('HALTING NOW')
+            return
 
         address = 0
 
-        # For now, we've just hardcoded a program:
+        file = open(path, 'r')
+        lines = file.readlines()
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        for line in lines:
 
-        for instruction in program:
-            self.ram[address] = instruction
+            if not line.startswith("#") and line.strip() != "":
+                self.ram[address] = int(line.strip(), 2)
+
             address += 1
+
+        # # For now, we've just hardcoded a program:
+
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
+
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
     def ram_read(self, register):
         return self.ram[register]
