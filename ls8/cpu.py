@@ -11,7 +11,9 @@ LDI = 0b10000010
 PRN = 0b01000111
 # MUL
 MUL = 0b10100010
-ALU = [MUL]
+PUSH = 0b01000101
+POP = 0b01000110
+
 
 class CPU:
     """Main CPU class."""
@@ -21,6 +23,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.sp = len(self.ram) - 1
         self.running = False
 
     def load(self):
@@ -47,7 +50,7 @@ class CPU:
         return self.ram[register]
 
     def ram_write(self, register, value):
-        self.reg[register] = value
+        self.ram[register] = value
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -89,19 +92,45 @@ class CPU:
         self.pc += 1
 
     def ldi(self):
-        register = self.ram[self.pc + 1]
-        value = self.ram[self.pc + 2]
+        register = self.ram_read(self.pc + 1)
+        value = self.ram_read(self.pc + 2)
 
-        print(f"[LDI] - Register: {register}, Value: {value}")
-
-        self.ram_write(register, value)
-
+        self.reg[register] = value
         self.pc += 3
 
     def prn(self):
         register = self.ram_read(self.pc + 1)
 
         print(self.reg[register])
+
+        self.pc += 2
+
+    def stack_push(self):
+        """
+        Adds an item to the stack
+        """
+        register = self.ram_read(self.pc + 1)
+        value = self.reg[register]
+        self.sp -= 1
+        self.ram_write(self.sp, value)
+        self.pc += 2
+
+
+    def stack_pop(self):
+        """
+        Removes an item from the stack
+        """
+        # Retrieve the value from RAM at the address in SP
+        # Store the value at the register passed in
+        # Increment SP
+
+        register = self.ram_read(self.pc + 1)
+
+        if self.sp < len(self.ram):
+            value = self.ram_read(self.sp)
+            self.reg[register] = value
+
+            self.sp += 1
 
         self.pc += 2
 
@@ -126,4 +155,8 @@ class CPU:
             elif command == MUL:
                 self.alu('MUL', self.ram_read(self.pc + 1),
                          self.ram_read(self.pc + 2))
+            elif command == PUSH:
+                self.stack_push()
+            elif command == POP:
+                self.stack_pop()
 
