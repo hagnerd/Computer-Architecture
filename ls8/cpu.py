@@ -23,7 +23,8 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-        self.sp = len(self.ram) - 1
+        # STACK POINTER
+        self.reg[-1] = len(self.ram) - 1
         self.running = False
 
     def load(self):
@@ -65,6 +66,15 @@ class CPU:
             raise Exception("Unsupported ALU operation")
 
         self.pc += 3
+
+    def get_stack_pointer(self):
+        return self.reg[-1]
+
+    def inc_stack_pointer(self):
+        self.reg[-1] += 1
+
+    def dec_stack_pointer(self):
+        self.reg[-1] -= 1
 
     def trace(self):
         """
@@ -111,8 +121,8 @@ class CPU:
         """
         register = self.ram_read(self.pc + 1)
         value = self.reg[register]
-        self.sp -= 1
-        self.ram_write(self.sp, value)
+        self.dec_stack_pointer()
+        self.ram_write(self.get_stack_pointer(), value)
         self.pc += 2
 
 
@@ -126,11 +136,10 @@ class CPU:
 
         register = self.ram_read(self.pc + 1)
 
-        if self.sp < len(self.ram):
-            value = self.ram_read(self.sp)
+        if self.get_stack_pointer() < len(self.ram):
+            value = self.ram_read(self.get_stack_pointer())
             self.reg[register] = value
-
-            self.sp += 1
+            self.inc_stack_pointer()
 
         self.pc += 2
 
